@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buat Ceriyah Sayang</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                  url('https://i.ibb.co.com/TMD3fQ3F/Screenshot-20260509-184354.png') center/cover no-repeat fixed;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px; overflow: hidden;
+    }
+.card {
+      background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px;
+      text-align: center; animation: masuk 0.5s ease; backdrop-filter: blur(8px);
+      position: relative;
+    }
+    @keyframes masuk { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    h1 { color: #e91e63; margin-bottom: 10px; font-size: 24px; min-height: 30px; }
+    p { color: #444; margin-bottom: 20px; font-weight: 500; }
+    input {
+      width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #f8bbd9;
+      border-radius: 10px; font-size: 16px; outline: none; background: rgba(255,255,255,0.8);
+    }
+    input:focus { border-color: #e91e63; }
+    button {
+      width: 100%; padding: 12px; background: #e91e63; color: white; border: none;
+      border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;
+      margin-top: 10px; transition: 0.2s;
+    }
+    button:hover { background: #c2185b; transform: scale(1.02); }
+.menu-btn { background: #ff80ab; margin: 8px 0; }
+.menu-btn:hover { background: #f50057; }
+.hidden { display: none; }
+.emoji { font-size: 40px; margin-bottom: 15px; }
+.foto-kecil {
+      width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+      border: 3px solid #e91e63; margin: 0 auto 15px;
+    }
+    #result {
+      margin-top: 20px; padding: 15px; background: #fce4ec; border-radius: 10px;
+      color: #880e4f; font-weight: 500; min-height: 50px;
+    }
+.hearts {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; overflow: hidden; z-index: -1;
+    }
+.heart {
+      position: absolute; color: #ff80ab; font-size: 20px;
+      animation: jatuh 5s linear infinite; opacity: 0.7;
+    }
+    @keyframes jatuh {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+      50% { opacity: 0.7; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+.music-btn {
+      position: absolute; top: 15px; right: 15px; width: 40px; height: 40px;
+      border-radius: 50%; background: #e91e63; color: white; border: none;
+      font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+.typing::after {
+      content: '|'; animation: blink 1s infinite; color: #e91e63;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    #overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000;
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+      color: white; font-size: 20px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">Klik di mana aja buat mulai ya sayang 💕</div>
+  <div class="hearts" id="hearts"></div>
+
+  <audio id="bgMusic" loop>
+    <source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="card hidden" id="loginPage">
+    <div class="emoji">🔐💕</div>
+    <h1 id="typingText" class="typing"></h1>
+    <p id="subText" style="opacity:0;">Login dulu ya biar bisa lanjut. Cuma kamu yang tau kuncinya</p>
+    <div id="loginForm" style="opacity:0;">
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Sandi">
+      <button onclick="cekLogin()">Masuk ke Hati Aku</button>
+      <div id="loginError" style="color: red; margin-top: 10px; font-size: 14px;"></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="menuPage">
+    <button class="music-btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
+    <img src="https://i.ibb.co.com/TMD3fQ3F/Screenshot-20260509-184354.png" class="foto-kecil" alt="Kita">
+    <h1>Berhasil Masuk Sayang!</h1>
+    <p>Sekarang pilih salah satu ya. Aku udah siapin spesial buat kamu</p>
+    <button class="menu-btn" onclick="tampilPesan(1)">Kenapa aku pilih kamu?</button>
+    <button class="menu-btn" onclick="tampilPesan(2)">Seberapa sayang aku?</button>
+    <button class="menu-btn" onclick="tampilPesan(3)">Mau denger janji aku?</button>
+    <button class="menu-btn" onclick="tampilPesan(4)">Bonus peluk virtual</button>
+    <div id="result">Klik tombol di atas ya sayang</div>
+    <button onclick="logout()" style="background: #999; margin-top: 20px;">Keluar</button>
+  </div>
+
+  <script>
+    const USER = "Ceriyah";
+    const PASS = "Milikagistatitik";
+    const music = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+    let isPlaying = false;
+
+    document.getElementById('overlay').addEventListener('click', function() {
+      this.style.display = 'none';
+      document.getElementById('loginPage').classList.remove('hidden');
+      playMusic();
+      mulaiKetik();
+    });
+
+    function mulaiKetik() {
+      const text = "Hai Ceriyah...";
+      const typingElement = document.getElementById('typingText');
+      let i = 0;
+
+      function ketik() {
+        if (i < text.length) {
+          typingElement.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(ketik, 120);
+        } else {
+          typingElement.classList.remove('typing');
+          setTimeout(() => {
+            document.getElementById('subText').style.transition = '0.5s';
+            document.getElementById('loginForm').style.transition = '0.5s';
+            document.getElementById('subText').style.opacity = '1';
+            document.getElementById('loginForm').style.opacity = '1';
+          }, 500);
+        }
+      }
+      ketik();
+    }
+
+    function cekLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const error = document.getElementById('loginError');
+
+      if (u === USER && p === PASS) {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('menuPage').classList.remove('hidden');
+        buatHati();
+      } else {
+        error.innerHTML = "Yah salah sayang 😝 Yang bener dong. Clue: nama kamu & sandi kesayangan kita";
+        setTimeout(() => error.innerHTML = "", 3000);
+      }
+    }
+
+    function tampilPesan(no) {
+      const result = document.getElementById('result');
+      const pesan = [
+        "",
+        "Karena dari 8 miliar orang di dunia, cuma kamu yang bikin aku ngerasa pulang. Kamu itu Ceriyah yang selalu nerangin hari aku ❤️",
+        "Kalau disuruh ngukur, dari bumi sampe ke pluto terus balik lagi x1000. Segitu sayangnya aku sama kamu, Milikagistatitik 😘",
+        "Aku janji bakal selalu ada, dengerin ceritamu, nemenin pas kamu sedih, dan ngerayain pas kamu seneng. Kamu ga akan jalan sendiri lagi ya",
+        "Sini aku peluk dulu 🤗 *peluk erat 10 detik* Udah? Kurang? Yaudah peluk lagi 🤗🤗 Nah sekarang senyum dong"
+      ];
+      result.innerHTML = pesan[no];
+      buatHati();
+    }
+
+    function logout() {
+      document.getElementById('menuPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('username').value = "";
+      document.getElementById('password').value = "";
+    }
+
+    function playMusic() {
+      music.play().then(() => {
+        isPlaying = true;
+        musicBtn.innerHTML = '🔊';
+      }).catch(e => {
+        console.log("User belum interaksi");
+      });
+    }
+
+    function pauseMusic() {
+      music.pause();
+      isPlaying = false;
+      musicBtn.innerHTML = '🔇';
+    }
+
+    function toggleMusic() {
+      if (isPlaying) pauseMusic();
+      else playMusic();
+    }
+
+    function buatHati() {
+      const container = document.getElementById('hearts');
+      for(let i = 0; i < 15; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.classList.add('heart');
+          heart.innerHTML = '❤️';
+          heart.style.left = Math.random() * 100 + 'vw';
+          heart.style.animationDuration = Math.random() * 3 + 3 + 's';
+          container.appendChild(heart);
+          setTimeout(() => heart.remove(), 6000);
+        }, i * 200);
+      }
+    }
+
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' &&!document.getElementById('loginPage').classList.contains('hidden')) {
+        cekLogin();
+      }
+    });
+  </script>
+</body>
+</html>
